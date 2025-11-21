@@ -1,63 +1,111 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useAuthStore } from '../stores/authStore';
-import { useReservationStore } from '../stores/reservationStore';
-import { useWaitlistStore } from '../stores/waitlistStore';
-import { useOrderStore } from '../stores/orderStore';
-import { Card } from '../components/common/Card';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import React, { useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { useAuthStore } from "../stores/authStore";
+import { useRestaurantStore } from "../stores/restaurantStore";
+import { useReservationStore } from "../stores/reservationStore";
+import { useWaitlistStore } from "../stores/waitlistStore";
+import { useOrderStore } from "../stores/orderStore";
+import { Card } from "../components/common/Card";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale/fr";
 
 export const DashboardScreen = ({ navigation }: any) => {
   const user = useAuthStore((state) => state.user);
+  const signOut = useAuthStore((state) => state.signOut);
+  const restaurant = useRestaurantStore((state) => state.restaurant);
+  const fetchRestaurant = useRestaurantStore((state) => state.fetchRestaurant);
   const reservations = useReservationStore((state) => state.reservations);
   const waitlist = useWaitlistStore((state) => state.waitlist);
   const orders = useOrderStore((state) => state.orders);
 
-  const fetchReservations = useReservationStore((state) => state.fetchReservations);
+  const fetchReservations = useReservationStore(
+    (state) => state.fetchReservations
+  );
   const fetchWaitlist = useWaitlistStore((state) => state.fetchWaitlist);
   const fetchOrders = useOrderStore((state) => state.fetchOrders);
 
   useEffect(() => {
-    if (user?.restaurantId) {
-      const today = format(new Date(), 'yyyy-MM-dd');
-      fetchReservations(user.restaurantId, today);
-      fetchWaitlist(user.restaurantId);
-      fetchOrders(user.restaurantId);
+    console.log("🔍 [Dashboard] User:", JSON.stringify(user, null, 2));
+    console.log("🔍 [Dashboard] Restaurant ID:", user?.restaurant_id);
+
+    if (user?.restaurant_id) {
+      const today = format(new Date(), "yyyy-MM-dd");
+      console.log("📅 Fetching data for date:", today);
+      fetchRestaurant(user.restaurant_id);
+      fetchReservations(user.restaurant_id, today);
+      fetchWaitlist(user.restaurant_id);
+      fetchOrders(user.restaurant_id);
+    } else {
+      console.warn("⚠️ No restaurant ID found for user");
     }
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.restaurant_id]);
 
   const todayReservations = reservations.filter(
-    (r) => r.date === format(new Date(), 'yyyy-MM-dd')
+    (r) => r.date === format(new Date(), "yyyy-MM-dd")
   );
 
   const activeOrders = orders.filter(
-    (o) => o.status !== 'paid' && o.status !== 'served'
+    (o) => o.status !== "paid" && o.status !== "served"
   );
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Tableau de bord</Text>
-        <Text style={styles.date}>
-          {format(new Date(), "EEEE d MMMM yyyy", { locale: fr })}
-        </Text>
+        <View style={styles.headerTop}>
+          <View style={styles.headerLeft}>
+            {restaurant && (
+              <Text style={styles.restaurantName}>{restaurant.name}</Text>
+            )}
+            <Text style={styles.title}>Tableau de bord</Text>
+            <Text style={styles.date}>
+              {format(new Date(), "EEEE d MMMM yyyy", { locale: fr })}
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
+            <Text style={styles.logoutText}>Déconnexion</Text>
+          </TouchableOpacity>
+        </View>
+        {user && (
+          <Text style={styles.userInfo}>
+            {user.firstName} {user.lastName} • {user.email}
+          </Text>
+        )}
       </View>
 
       <View style={styles.stats}>
-        <Card style={styles.statCard}>
+        <Card
+          style={styles.statCard}
+          onPress={() => navigation.navigate("Reservations")}
+        >
           <Text style={styles.statValue}>{todayReservations.length}</Text>
           <Text style={styles.statLabel}>Réservations</Text>
           <Text style={styles.statSubtext}>aujourd'hui</Text>
         </Card>
 
-        <Card style={styles.statCard}>
+        <Card
+          style={styles.statCard}
+          onPress={() => navigation.navigate("Waitlist")}
+        >
           <Text style={styles.statValue}>{waitlist.length}</Text>
           <Text style={styles.statLabel}>Liste d'attente</Text>
           <Text style={styles.statSubtext}>en cours</Text>
         </Card>
 
-        <Card style={styles.statCard}>
+        <Card
+          style={styles.statCard}
+          onPress={() => navigation.navigate("Orders")}
+        >
           <Text style={styles.statValue}>{activeOrders.length}</Text>
           <Text style={styles.statLabel}>Commandes</Text>
           <Text style={styles.statSubtext}>actives</Text>
@@ -69,7 +117,7 @@ export const DashboardScreen = ({ navigation }: any) => {
 
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => navigation.navigate('Reservations')}
+          onPress={() => navigation.navigate("Reservations")}
         >
           <Text style={styles.actionIcon}>📅</Text>
           <View style={styles.actionContent}>
@@ -80,7 +128,7 @@ export const DashboardScreen = ({ navigation }: any) => {
 
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => navigation.navigate('Clients')}
+          onPress={() => navigation.navigate("Clients")}
         >
           <Text style={styles.actionIcon}>👥</Text>
           <View style={styles.actionContent}>
@@ -91,7 +139,7 @@ export const DashboardScreen = ({ navigation }: any) => {
 
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => navigation.navigate('Orders')}
+          onPress={() => navigation.navigate("Orders")}
         >
           <Text style={styles.actionIcon}>🍽️</Text>
           <View style={styles.actionContent}>
@@ -102,7 +150,7 @@ export const DashboardScreen = ({ navigation }: any) => {
 
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => navigation.navigate('Floor')}
+          onPress={() => navigation.navigate("Floor")}
         >
           <Text style={styles.actionIcon}>🏢</Text>
           <View style={styles.actionContent}>
@@ -118,49 +166,80 @@ export const DashboardScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: "#F9FAFB",
   },
   header: {
     padding: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: "#E5E7EB",
+  },
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  restaurantName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#007AFF",
+    marginBottom: 4,
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: "700",
+    color: "#111827",
     marginBottom: 4,
+  },
+  logoutButton: {
+    backgroundColor: "#EF4444",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: "#FFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  userInfo: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginTop: 4,
   },
   date: {
     fontSize: 14,
-    color: '#6B7280',
-    textTransform: 'capitalize',
+    color: "#6B7280",
+    textTransform: "capitalize",
   },
   stats: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     gap: 12,
   },
   statCard: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     padding: 16,
   },
   statValue: {
     fontSize: 32,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: "700",
+    color: "#111827",
   },
   statLabel: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#6B7280',
+    fontWeight: "600",
+    color: "#6B7280",
     marginTop: 4,
   },
   statSubtext: {
     fontSize: 11,
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     marginTop: 2,
   },
   quickActions: {
@@ -168,18 +247,18 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: "700",
+    color: "#111827",
     marginBottom: 12,
   },
   actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
@@ -197,12 +276,12 @@ const styles = StyleSheet.create({
   },
   actionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: "600",
+    color: "#111827",
     marginBottom: 2,
   },
   actionDescription: {
     fontSize: 13,
-    color: '#6B7280',
+    color: "#6B7280",
   },
 });

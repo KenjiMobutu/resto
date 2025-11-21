@@ -27,11 +27,12 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .eq('restaurant_id', restaurantId)
         .order('last_visit', { ascending: false, nullsFirst: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       set({ clients: data || [], loading: false });
     } catch (error) {
-      console.error('Error fetching clients:', error);
       set({ loading: false });
     }
   },
@@ -50,7 +51,6 @@ export const useClientStore = create<ClientState>((set, get) => ({
 
       set({ clients: data || [], loading: false });
     } catch (error) {
-      console.error('Error searching clients:', error);
       set({ loading: false });
     }
   },
@@ -75,24 +75,35 @@ export const useClientStore = create<ClientState>((set, get) => ({
     }
   },
 
-  updateClient: async (id: string, updates: Partial<Client>) => {
+  updateClient: async (id: string, clientData: Partial<Client>) => {
+    set({ loading: true });
     try {
-      const { error } = await supabase
+      // 1. Appel à l'API (Supabase, Firebase, ou votre backend)
+      const { data, error } = await supabase // ou votre service API
         .from('clients')
-        .update(updates)
-        .eq('id', id);
+        .update(clientData)
+        .eq('id', id)
+        .select()
+        .single();
 
-      if (error) return { error };
+      if (error) throw error;
 
+      // 2. JARVIS : C'est ici la clé. On met à jour le state LOCAL immédiatement.
+      // On parcourt la liste et on remplace uniquement le client modifié.
       set((state) => ({
-        clients: state.clients.map((c) =>
-          c.id === id ? { ...c, ...updates } : c
+        clients: state.clients.map((client) =>
+          client.id === id ? { ...client, ...clientData } : client
         ),
+        // Si vous avez un tableau séparé pour les résultats de recherche, mettez-le à jour aussi
+        // filteredClients: state.filteredClients.map((c) => c.id === id ? { ...c, ...clientData } : c),
+        loading: false
       }));
 
-      return { error: null };
+      return data; // ou true
     } catch (error) {
-      return { error };
+      console.error('Erreur lors de la mise à jour du client:', error);
+      set({ loading: false });
+      throw error;
     }
   },
 

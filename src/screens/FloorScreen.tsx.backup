@@ -1,0 +1,223 @@
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+import { useAuthStore } from '../stores/authStore';
+import { useFloorStore } from '../stores/floorStore';
+import { TableComponent } from '../components/floor/TableComponent';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+export const FloorScreen = ({ navigation }: any) => {
+  const user = useAuthStore((state) => state.user);
+  const tables = useFloorStore((state) => state.tables);
+  const loading = useFloorStore((state) => state.loading);
+  const fetchFloor = useFloorStore((state) => state.fetchFloor);
+  const updateTablePosition = useFloorStore((state) => state.updateTablePosition);
+
+  const [editMode, setEditMode] = useState(false);
+
+  useEffect(() => {
+    if (user?.restaurant_id) {
+      fetchFloor(user.restaurant_id);
+    }
+  }, [user]);
+
+  const handleTablePositionChange = (tableId: string, x: number, y: number) => {
+    updateTablePosition(tableId, { x, y });
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Plan de salle</Text>
+        <TouchableOpacity
+          style={[styles.editButton, editMode && styles.editButtonActive]}
+          onPress={() => setEditMode(!editMode)}
+        >
+          <Text style={[styles.editButtonText, editMode && styles.editButtonTextActive]}>
+            {editMode ? '✓ Terminer' : '✎ Modifier'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.floorContainer}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.floor}>
+          {tables.map((table) => (
+            <TableComponent
+              key={table.id}
+              table={table}
+              editable={editMode}
+              onPositionChange={(x, y) => handleTablePositionChange(table.id, x, y)}
+            />
+          ))}
+
+          {tables.length === 0 && !loading && (
+            <View style={styles.empty}>
+              <Text style={styles.emptyText}>Aucune table configurée</Text>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => navigation.navigate('AddTable')}
+              >
+                <Text style={styles.addButtonText}>+ Ajouter une table</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </ScrollView>
+
+      {editMode && (
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.addTableButton}
+            onPress={() => navigation.navigate('AddTable')}
+          >
+            <Text style={styles.addTableButtonText}>+ Ajouter une table</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <View style={styles.legend}>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: '#10B981' }]} />
+          <Text style={styles.legendText}>Disponible</Text>
+        </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: '#EF4444' }]} />
+          <Text style={styles.legendText}>Occupée</Text>
+        </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: '#F59E0B' }]} />
+          <Text style={styles.legendText}>Réservée</Text>
+        </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: '#6B7280' }]} />
+          <Text style={styles.legendText}>Nettoyage</Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  editButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  editButtonActive: {
+    backgroundColor: '#007AFF',
+  },
+  editButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  editButtonTextActive: {
+    color: '#FFF',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  floorContainer: {
+    minWidth: SCREEN_WIDTH,
+    minHeight: SCREEN_HEIGHT - 200,
+  },
+  floor: {
+    width: SCREEN_WIDTH * 2,
+    height: SCREEN_HEIGHT * 1.5,
+    backgroundColor: '#FFF',
+    position: 'relative',
+  },
+  empty: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginBottom: 16,
+  },
+  addButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  addButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  footer: {
+    padding: 16,
+    backgroundColor: '#FFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  addTableButton: {
+    backgroundColor: '#007AFF',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  addTableButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  legend: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 12,
+    backgroundColor: '#FFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  legendColor: {
+    width: 16,
+    height: 16,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  legendText: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+});

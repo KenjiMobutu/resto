@@ -49,7 +49,7 @@ export interface User {
   firstName: string;
   lastName: string;
   role: UserRole;
-  restaurantId: string;
+  restaurant_id: string;
   phone?: string;
   avatar?: string;
   createdAt: string;
@@ -86,8 +86,8 @@ export interface RestaurantSettings {
 export interface Client {
   id: string;
   restaurantId: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email?: string;
   phone: string;
   tags: string[];
@@ -95,8 +95,8 @@ export interface Client {
   dietaryRestrictions: string[];
   preferences: string[];
   notes?: string;
-  visitCount: number;
-  totalSpent: number;
+  visit_count: number;
+  total_spent: number;
   averageRating?: number;
   lastVisit?: string;
   createdAt: string;
@@ -106,15 +106,15 @@ export interface Client {
 export interface Reservation {
   id: string;
   restaurantId: string;
-  clientId: string;
+  client_id: string;
   client?: Client;
   date: string;
   time: string;
-  partySize: number;
+  party_size: number;
   status: ReservationStatus;
   tableId?: string;
   table?: Table;
-  specialRequests?: string;
+  special_requests?: string;
   notes?: string;
   assignedTo?: string;
   createdBy: string;
@@ -183,10 +183,10 @@ export interface MenuItem {
 
 export interface Order {
   id: string;
-  restaurantId: string;
-  tableId?: string;
+  restaurant_id: string;
+  table_id?: string;
   table?: Table;
-  clientId?: string;
+  client_id?: string;
   client?: Client;
   items: OrderItem[];
   status: OrderStatus;
@@ -194,12 +194,12 @@ export interface Order {
   tax: number;
   tip?: number;
   total: number;
-  paymentMethod?: PaymentMethod;
-  paymentIntentId?: string;
+  payment_method?: PaymentMethod;
+  payment_intent_id?: string;
   notes?: string;
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface OrderItem {

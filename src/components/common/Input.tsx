@@ -40,9 +40,9 @@ export const Input: React.FC<InputProps> = ({
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor="#9CA3AF"
-        secureTextEntry={secureTextEntry}
+        secureTextEntry={!!secureTextEntry}
         keyboardType={keyboardType}
-        multiline={multiline}
+        multiline={!!multiline}
         numberOfLines={numberOfLines}
         editable={!disabled}
       />

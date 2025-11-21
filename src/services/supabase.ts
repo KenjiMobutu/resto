@@ -7,14 +7,40 @@ const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Adapter for native platforms (iOS/Android)
 const ExpoSecureStoreAdapter = {
-  getItem: (key: string) => {
-    return SecureStore.getItemAsync(key);
+  getItem: async (key: string) => {
+    try {
+      const item = await SecureStore.getItemAsync(key);
+      // Ensure we always return a string or null, never an object
+      if (item === null || item === undefined) {
+        return null;
+      }
+      // If it's already a string, return it
+      if (typeof item === 'string') {
+        return item;
+      }
+      // If somehow it's an object, stringify it (this shouldn't happen)
+      console.warn('⚠️ SecureStore returned non-string value, converting:', typeof item);
+      return JSON.stringify(item);
+    } catch (error) {
+      console.error('Error getting item from SecureStore:', error);
+      return null;
+    }
   },
-  setItem: (key: string, value: string) => {
-    SecureStore.setItemAsync(key, value);
+  setItem: async (key: string, value: string) => {
+    try {
+      // Ensure value is always a string before storing
+      const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+      await SecureStore.setItemAsync(key, stringValue);
+    } catch (error) {
+      console.error('Error setting item in SecureStore:', error);
+    }
   },
-  removeItem: (key: string) => {
-    SecureStore.deleteItemAsync(key);
+  removeItem: async (key: string) => {
+    try {
+      await SecureStore.deleteItemAsync(key);
+    } catch (error) {
+      console.error('Error removing item from SecureStore:', error);
+    }
   },
 };
 

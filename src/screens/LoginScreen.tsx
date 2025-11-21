@@ -63,7 +63,7 @@ export const LoginScreen = () => {
               value={password}
               onChangeText={setPassword}
               placeholder="••••••••"
-              secureTextEntry
+              secureTextEntry={true}
             />
 
             {error && <Text style={styles.error}>{error}</Text>}
@@ -72,7 +72,7 @@ export const LoginScreen = () => {
               title="Se connecter"
               onPress={handleLogin}
               loading={loading}
-              fullWidth
+              fullWidth={true}
               size="large"
             />
           </View>

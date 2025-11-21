@@ -74,25 +74,41 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ loading: true });
       const { data: { session } } = await supabase.auth.getSession();
 
-      if (session) {
-        const { data: user, error } = await supabase
+         // Anti-corruption de session venant de AsyncStorage
+    const safeSession = typeof session === 'string' ? null : session;
+
+      if (safeSession) {
+        const { data: userData, error } = await supabase
           .from('users')
           .select('*')
-          .eq('id', session.user.id)
+          .eq('id', safeSession.user.id)
           .single();
 
-        if (!error && user) {
-          set({ user, session, loading: false });
+        if (!error && userData) {
+          // Map snake_case from DB to camelCase for TypeScript
+          const user: User = {
+            id: userData.id,
+            email: userData.email,
+            firstName: userData.first_name,
+            lastName: userData.last_name,
+            role: userData.role,
+            restaurant_id: userData.restaurant_id,
+            phone: userData.phone,
+            avatar: userData.avatar,
+            createdAt: userData.created_at,
+            updatedAt: userData.updated_at,
+          };
+          set({ user, session: safeSession, loading: false });
         } else {
           // User authenticated but no profile in users table
           console.error('❌ ERREUR: Profil utilisateur non trouvé');
-          console.error('User ID:', session.user.id);
-          console.error('Email:', session.user.email);
+          console.error('User ID:', safeSession.user.id);
+          console.error('Email:', safeSession.user.email);
           console.error('\n📋 SOLUTION:');
           console.error('1. Allez dans Supabase SQL Editor');
           console.error('2. Exécutez le SQL dans CREATE_TEST_USER.md');
           console.error('3. Relancez l\'app\n');
-          set({ session, loading: false });
+          set({ session: safeSession, loading: false });
         }
       } else {
         set({ loading: false });

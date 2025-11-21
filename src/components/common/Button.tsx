@@ -20,20 +20,25 @@ export const Button: React.FC<ButtonProps> = ({
   loading = false,
   fullWidth = false,
 }) => {
+  // Ensure all booleans are actually booleans
+  const isDisabled = !!disabled;
+  const isLoading = !!loading;
+  const isFullWidth = !!fullWidth;
+
   return (
     <TouchableOpacity
       style={[
         styles.button,
         styles[variant],
         styles[size],
-        disabled && styles.disabled,
-        fullWidth && styles.fullWidth,
+        isDisabled && styles.disabled,
+        isFullWidth && styles.fullWidth,
       ]}
       onPress={onPress}
-      disabled={disabled || loading}
+      disabled={isDisabled || isLoading}
       activeOpacity={0.7}
     >
-      {loading ? (
+      {isLoading ? (
         <ActivityIndicator color="#FFF" />
       ) : (
         <Text style={[styles.text, styles[`${size}Text`]]}>{title}</Text>

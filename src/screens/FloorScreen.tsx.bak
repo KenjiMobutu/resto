@@ -60,7 +60,7 @@ export const FloorScreen = ({ route, navigation }: any) => {
 
       Alert.alert(
         'Confirmer l\'attribution',
-        `Attribuer la table ${table.number} (${table.capacity} personnes) ?`,
+        \`Attribuer la table \${table.number} (\${table.capacity} personnes) ?\`,
         [
           { text: 'Annuler', style: 'cancel' },
           {
@@ -77,9 +77,6 @@ export const FloorScreen = ({ route, navigation }: any) => {
           }
         ]
       );
-    } else {
-      // Mode normal : afficher les détails de la table et sa commande
-      navigation.navigate('TableDetails', { tableId: table.id });
     }
   };
 

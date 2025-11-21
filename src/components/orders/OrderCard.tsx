@@ -36,7 +36,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onPress }) => {
         <View style={styles.headerLeft}>
           <Text style={styles.table}>{tableInfo}</Text>
           <Text style={styles.time}>
-            {format(new Date(order.createdAt), 'HH:mm', { locale: fr })}
+            {format(new Date(order.created_at), 'HH:mm', { locale: fr })}
           </Text>
         </View>
         <Badge label={STATUS_LABELS[order.status]} color={STATUS_COLORS[order.status]} />
