@@ -32,9 +32,9 @@ const MainTabs = () => {
           backgroundColor: "#FFF",
           borderTopWidth: 1,
           borderTopColor: "#E5E7EB",
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 60,
+          paddingBottom: 18,
+          paddingTop: 6,
+          height: 70,
         },
         tabBarLabelStyle: {
           fontSize: 12,
